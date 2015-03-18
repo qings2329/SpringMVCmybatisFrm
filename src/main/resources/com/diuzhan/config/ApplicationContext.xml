@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:context="http://www.springframework.org/schema/context" 
+    xmlns:aop="http://www.springframework.org/schema/aop" 
+    xmlns:tx="http://www.springframework.org/schema/tx" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+http://www.springframework.org/schema/beans/spring-beans-2.5.xsd 
+http://www.springframework.org/schema/context 
+http://www.springframework.org/schema/context/spring-context-2.5.xsd 
+http://www.springframework.org/schema/aop 
+http://www.springframework.org/schema/aop/spring-aop-2.5.xsd 
+http://www.springframework.org/schema/tx 
+http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"> 
+<!--      jdbc.properties文件路径  -->
+    <bean 
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+        <property name="locations" 
+        value="classpath:/com/diuzhan/config/jdbc.properties" /> 
+    </bean> 
+<!--     数据源的配置 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" 
+        destroy-method="close"> 
+        <property name="driverClassName" value="${driver}" /> 
+        <property name="url" value="${url}" /> 
+        <property name="username" value="${user}" /> 
+        <property name="password" value="${password}" /> 
+<!--          data source configuration -->
+<!-- 		initial connections -->
+        <property name="initialSize" value="60" />
+<!--         MAX connections -->
+        <property name="maxActive" value="100" />
+<!--         MAX idle connections -->
+        <property name="maxIdle" value="50" />
+<!--         MIN idle connections -->
+        <property name="minIdle" value="10" />
+<!--         处理mysql 8小时自动断开连接的问题 -->
+        <property name="testWhileIdle" value="true" /> 
+        <property name="testOnBorrow" value="false" /> 
+        <property name="testOnReturn" value="false" /> 
+        <property name="validationQuery" value="select 1" /> 
+        <property name="timeBetweenEvictionRunsMillis" value="20000" /> 
+        <property name="numTestsPerEvictionRun" value="100" /> 
+    </bean> 
+<!--     ====事务相关控制== -->
+    <bean id="transactionManager" 
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> 
+        <property name="dataSource" ref="dataSource" /> 
+    </bean> 
+    <tx:advice id="userTxAdvice" transaction-manager="transactionManager"> 
+        <tx:attributes> 
+            <tx:method name="*" propagation="REQUIRED" read-only="false" 
+                rollback-for="java.lang.Exception"/> 
+        </tx:attributes> 
+    </tx:advice> 
+    <aop:config> 
+        <aop:pointcut id="pc" 
+            expression="execution(* com.diuzhan.web.business.*.*(..))" /> 
+<!--               把事务控制在Business层 -->
+        <aop:advisor pointcut-ref="pc" advice-ref="userTxAdvice" /> 
+    </aop:config> 
+<!--     MyBatis sqlSessionFactory 配置 mybatis -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"> 
+        <property name="configLocation" 
+        value="classpath:/com/diuzhan/mybatis/SqlMapConfig.xml" /> 
+        <property name="dataSource" ref="dataSource" /> 
+    </bean> 
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate"> 
+        <constructor-arg index="0" ref="sqlSessionFactory" /> 
+    </bean> 
+<!--      business AND implementation beans 包含ImplAndBusinessBeans.xml文件 -->
+    <import resource="ImplAndBusinessBeans.xml" /> 
+</beans>

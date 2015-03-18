@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper 
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" 
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd"> 
+<mapper namespace="com.diuzhan.web.mapper.Test">
+
+<!--     定义一条查询语句，在bean的implementation中会引用此语句的id -->
+    <insert id="add" parameterType="Test" 
+        useGeneratedKeys="true" keyProperty="classId"> 
+        INSERT INTO testtable (NAME,DATE) 
+        VALUES(#{name},#{birthday}) 
+    </insert> 
+</mapper>
